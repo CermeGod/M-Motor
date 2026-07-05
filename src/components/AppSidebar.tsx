@@ -124,6 +124,18 @@ export function AppSidebar({ active }: AppSidebarProps) {
         </nav>
 
         <div className="mt-auto border-t border-[#123048] p-3">
+          <button
+            onClick={() => alert("Soporte Técnico:\n📞 01-800-MOTOR-IT\n📧 soporte@mmotors.pe")}
+            className={`flex items-center rounded-md py-2 w-full text-left text-xs font-semibold ${isExpanded ? "justify-start px-3" : "justify-center px-2"} hover:bg-[#123048] mb-1`}
+          >
+            <span className="text-[#e2f2fa]">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </span>
+            {isExpanded && <span className="ml-2 whitespace-nowrap text-[#e2f2fa]">Soporte Técnico</span>}
+          </button>
+          
           <Link
             href="/settings"
             className={`flex items-center rounded-md py-2 text-xs font-semibold ${isExpanded ? "justify-start px-3" : "justify-center px-2"} ${

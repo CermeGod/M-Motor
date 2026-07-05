@@ -29,6 +29,7 @@ model User {
   passwordHash  String
   role          String            @default("VENDEDOR")
   email         String?           @unique
+  telefono      String?
   createdAt     DateTime          @default(now())
   ultimoAcceso  DateTime?
   configuration Configuration?

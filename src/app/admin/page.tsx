@@ -16,6 +16,10 @@ export default function AdminPage() {
   const [credits, setCredits] = useState<AdminCredit[]>([]);
   const [msg, setMsg] = useState("");
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [currency, setCurrency] = useState<"PEN" | "USD">("PEN");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  const filteredCredits = selectedUserId ? credits.filter(c => c.user.username === selectedUserId) : credits;
 
   useEffect(() => {
     async function init() {
@@ -75,7 +79,6 @@ export default function AdminPage() {
               { label: "Usuarios registrados", value: stats.totalUsers, icon: "👤", color: "bg-blue-50 border-blue-200" },
               { label: "Clientes registrados", value: stats.totalClients, icon: "🧑‍💼", color: "bg-green-50 border-green-200" },
               { label: "Cotizaciones generadas", value: stats.totalCredits, icon: "📊", color: "bg-purple-50 border-purple-200" },
-              { label: "Total financiado PEN", value: `S/ ${fmt(stats.totalFinanciado["PEN"] ?? 0)}`, icon: "💰", color: "bg-amber-50 border-amber-200" },
             ].map((card) => (
               <div key={card.label} className={`rounded-2xl border ${card.color} p-5`}>
                 <div className="text-2xl">{card.icon}</div>
@@ -83,6 +86,20 @@ export default function AdminPage() {
                 <div className="text-xs text-slate-500 mt-0.5">{card.label}</div>
               </div>
             ))}
+            
+            {/* Toggleable Currency Card */}
+            <div className="rounded-2xl border bg-amber-50 border-amber-200 p-5 relative group cursor-pointer" onClick={() => setCurrency(currency === "PEN" ? "USD" : "PEN")}>
+              <div className="flex justify-between items-start">
+                <div className="text-2xl">💰</div>
+                <div className="text-[10px] text-amber-600 font-bold bg-amber-100 px-2 py-0.5 rounded-full hover:bg-amber-200">
+                  Cambiar a {currency === "PEN" ? "USD" : "PEN"} ↺
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-bold text-slate-800">
+                {currency === "PEN" ? "S/" : "$"} {fmt(stats.totalFinanciado[currency] ?? 0)}
+              </div>
+              <div className="text-xs text-slate-500 mt-0.5">Total financiado en {currency}</div>
+            </div>
           </div>
         )}
 
@@ -106,9 +123,12 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {users.map((u) => (
-                  <tr key={u.id} className="border-t border-slate-200 hover:bg-slate-50">
+                  <tr key={u.id} className={`border-t border-slate-200 cursor-pointer ${selectedUserId === u.username ? "bg-[#eaf4f7]" : "hover:bg-slate-50"}`} onClick={() => setSelectedUserId(selectedUserId === u.username ? null : u.username)}>
                     <td className="p-3">#{u.id}</td>
-                    <td className="p-3 font-medium">{u.username}</td>
+                    <td className="p-3 font-medium flex items-center gap-2">
+                      {u.username}
+                      {selectedUserId === u.username && <span className="text-[10px] font-bold text-[#4FAEC7]">✓ Filtrado</span>}
+                    </td>
                     <td className="p-3">
                       <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === "ADMIN" ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600"}`}>
                         {u.role}
@@ -117,7 +137,7 @@ export default function AdminPage() {
                     <td className="p-3 text-slate-500">{u.email ?? "—"}</td>
                     <td className="p-3 text-slate-500">{new Date(u.createdAt).toLocaleDateString("es-PE")}</td>
                     <td className="p-3 text-slate-500">{u.ultimoAcceso ? new Date(u.ultimoAcceso).toLocaleString("es-PE") : "—"}</td>
-                    <td className="p-3">
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
                       {u.id !== currentUserId ? (
                         <button
                           onClick={() => changeRole(u.id, u.role === "ADMIN" ? "VENDEDOR" : "ADMIN")}
@@ -136,7 +156,14 @@ export default function AdminPage() {
 
         {/* Last 20 credits */}
         <section>
-          <h2 className="mb-3 text-xl font-bold text-[#0E3F5D]">Últimas 20 cotizaciones del sistema</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold text-[#0E3F5D]">Últimas 20 cotizaciones globales</h2>
+            {selectedUserId && (
+              <button onClick={() => setSelectedUserId(null)} className="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded border border-red-200">
+                Borrar filtro: {selectedUserId} ✕
+              </button>
+            )}
+          </div>
           <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
             <table className="w-full text-sm">
               <thead className="bg-[#EEF0F4] text-xs font-bold uppercase tracking-wide text-slate-600">
@@ -151,7 +178,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {credits.map((c) => (
+                {filteredCredits.map((c) => (
                   <tr key={c.id} className="border-t border-slate-200 hover:bg-slate-50">
                     <td className="p-3"><a href={`/credits/${c.id}`} className="text-[#0E3F5D] hover:underline font-medium">#{c.id}</a></td>
                     <td className="p-3">{c.user.username}</td>
@@ -162,6 +189,11 @@ export default function AdminPage() {
                     <td className="p-3 text-slate-500">{new Date(c.createdAt).toLocaleDateString("es-PE")}</td>
                   </tr>
                 ))}
+                {filteredCredits.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="p-6 text-center text-slate-500">No se encontraron cotizaciones para este filtro.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
