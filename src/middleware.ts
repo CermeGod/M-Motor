@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Routes accessible without a session
 const PUBLIC_PATHS = ["/login", "/register"];
 // Auth API routes that don't require a token
-const PUBLIC_API_PATHS = ["/api/auth/login", "/api/auth/register"];
+const PUBLIC_API_PATHS = ["/api/auth/login", "/api/auth/register", "/api/auth/captcha"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
