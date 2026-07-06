@@ -122,8 +122,10 @@ export function calculateCredit(input: CreditInput): CalculationResult {
       if (input.periodoGraciaTipo === "PARTIAL") {
         cuota = interes.plus(segDes).plus(segVeh).plus(input.portesMontoFijo);
       } else if (input.periodoGraciaTipo === "TOTAL") {
-        // Interest capitalizes into the balance; no payment required
-        saldo = saldo.plus(interes);
+        // All unpaid charges (interest, insurances, fees) capitalize into the balance
+        const cargosImpagos = interes.plus(segDes).plus(segVeh).plus(input.portesMontoFijo);
+        saldo = saldo.plus(cargosImpagos);
+        amort = cargosImpagos.negated(); // To reflect negative amortization in the table
       }
     } else if (m === input.plazoMeses) {
       // Final period: pay remaining balance minus balloon, then balloon itself
